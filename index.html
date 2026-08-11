@@ -1,1 +1,75 @@
-rgd
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Education</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      /* Dynamic gradient background */
+      background: linear-gradient(-45deg, #0f172a, #1e1b4b, #311042, #0284c7);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+      color: #ffffff;
+      overflow: hidden;
+    }
+
+    /* Keyframes for the background movement */
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      text-align: center;
+      padding: 3rem 4rem;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    h1 {
+      font-size: 5rem;
+      font-weight: 800;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      /* Gradient text fill */
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    p {
+      font-size: 1.25rem;
+      color: #94a3b8;
+      letter-spacing: 1px;
+      font-weight: 300;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>EDUCATION</h1>
+    <p>Empowering Minds • Shaping the Future</p>
+  </div>
+
+</body>
+</html>
