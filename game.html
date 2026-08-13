@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathBlitz — Terminal Math Game</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --blue: #58a6ff;
+    --cyan: #39c5cf;
+    --magenta: #bc8cff;
+    --orange: #ff7b72;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  #app {
+    width: 100%;
+    max-width: 480px;
+    padding: 20px;
+    position: relative;
+  }
+  .screen { display: none; animation: fadeIn 0.3s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  @keyframes slideDown { from { transform: translateY(-20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+  .banner {
+    text-align: center;
+    margin-bottom: 24px;
+    user-select: none;
+  }
+  .banner h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(90deg, var(--cyan), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+  }
+  .banner p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .card:hover { border-color: var(--blue); }
+  .card-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+
+  .btn-grid {
+    display: grid;
+    gap: 10px;
+  }
+  .btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.15s;
+    width: 100%;
+    font-family: inherit;
+  }
+  .btn:hover { background: #1f242c; border-color: var(--blue); transform: translateX(4px); }
+  .btn:active { transform: scale(0.98); }
+  .btn .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--border);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--blue);
+    flex-shrink: 0;
+  }
+  .btn.selected {
+    border-color: var(--green);
+    background: rgba(63,185,80,0.08);
+  }
+  .btn.selected .num { background: var(--green); color: #000; }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  input[type="number"] {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 1rem;
+    outline: none;
+    font-family: inherit;
+  }
+  input[type="number"]:focus { border-color: var(--blue); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    border: none;
+    color: #000;
+    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(88,166,255,0.25); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+  }
+  .hud span { color: var(--muted); }
+  .hud b { color: var(--text); }
+  .timer-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--yellow), var(--red));
+    width: 100%;
+    transition: width 0.1s linear;
+    border-radius: 2px;
+  }
+
+  .question {
+    text-align: center;
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 30px 0;
+    letter-spacing: 2px;
+    user-select: none;
+  }
+  .answer-input {
+    width: 100%;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    padding: 16px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    color: var(--text);
+    border-radius: 14px;
+    outline: none;
+    font-family: inherit;
+    caret-color: var(--cyan);
+  }
+  .answer-input:focus { border-color: var(--blue); }
+  .answer-input.correct { border-color: var(--green); animation: pop 0.3s ease; }
+  .answer-input.wrong { border-color: var(--red); animation: shake 0.4s ease; }
+
+  .feedback {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    min-height: 28px;
+  }
+  .feedback.correct { color: var(--green); }
+  .feedback.wrong { color: var(--red); }
+  .feedback.bonus { color: var(--yellow); }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .stat-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-box .label { font-size: 0.7rem; text-transform: uppercase; color: var(--muted); letter-spacing: 1px; }
+  .stat-box .value { font-size: 1.4rem; font-weight: 800; margin-top: 4px; }
+
+  .grade {
+    font-size: 4rem;
+    font-weight: 900;
+    text-align: center;
+    margin: 10px 0;
+    background: linear-gradient(135deg, var(--yellow), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .score-list {
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .score-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+  }
+  .score-row:last-child { border-bottom: none; }
+  .score-row .mode { color: var(--blue); font-weight: 600; }
+  .score-row .pts { color: var(--yellow); font-weight: 700; }
+
+  .kbd {
+    display: inline-block;
+    background: var(--border);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-family: monospace;
+    color: var(--muted);
+  }
+
+  .numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .numpad button {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.1s;
+  }
+  .numpad button:hover { background: #1f242c; border-color: var(--blue); }
+  .numpad button:active { transform: scale(0.95); }
+  .numpad .wide { grid-column: span 2; }
+  .numpad .action { background: var(--red); border-color: var(--red); color: #fff; }
+  .numpad .submit { background: var(--green); border-color: var(--green); color: #000; }
+
+  @media (max-width: 400px) {
+    .banner h1 { font-size: 1.8rem; }
+    .question { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- MENU SCREEN -->
+<div id="screen-menu" class="screen active">
+  <div class="banner">
+    <h1>MathBlitz</h1>
+    <p>Terminal Math Challenge</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Main Menu</div>
+    <div class="btn-grid">
+      <button class="btn" onclick="goSetup()">
+        <span class="num">1</span>
+        <span>Play Game (Timed)</span>
+      </button>
+      <button class="btn" onclick="goZen()">
+        <span class="num">2</span>
+        <span>Zen Practice (No Timer)</span>
+      </button>
+      <button class="btn" onclick="showScores()">
+        <span class="num">3</span>
+        <span>View High Scores</span>
+      </button>
+      <button class="btn" onclick="showHelp()">
+        <span class="num">4</span>
+        <span>How to Play</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div id="screen-setup" class="screen">
+  <div class="banner"><h1>MathBlitz</h1><p>Configure your challenge</p></div>
+
+  <div class="card">
+    <div class="card-title">Select Mode</div>
+    <div class="btn-grid" id="mode-btns">
+      <button class="btn" data-mode="1" onclick="pickMode(1)"><span class="num">+</span><span>Addition</span></button>
+      <button class="btn" data-mode="2" onclick="pickMode(2)"><span class="num">−</span><span>Subtraction</span></button>
+      <button class="btn" data-mode="3" onclick="pickMode(3)"><span class="num">×</span><span>Multiplication</span></button>
+      <button class="btn" data-mode="4" onclick="pickMode(4)"><span class="num">÷</span><span>Division</span></button>
+      <button class="btn" data-mode="5" onclick="pickMode(5)"><span class="num">★</span><span>Mixed Operations</span></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Difficulty</div>
+    <div class="btn-grid" id="diff-btns">
+      <button class="btn" data-diff="1" onclick="pickDiff(1)"><span class="num">1</span><span>Easy — small numbers, 15s</span></button>
+      <button class="btn" data-diff="2" onclick="pickDiff(2)"><span class="num">2</span><span>Medium — moderate, 12s</span></button>
+      <button class="btn" data-diff="3" onclick="pickDiff(3)"><span class="num">3</span><span>Hard — large numbers, 10s</span></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Questions</div>
+    <div class="input-row">
+      <input type="number" id="rounds-input" value="10" min="5" max="50">
+      <button class="btn-primary" onclick="startGame()">Start ▶</button>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:8px;">
+    <button class="btn" style="justify-content:center; border:none; color:var(--muted);" onclick="goMenu()">← Back to Menu</button>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="screen-game" class="screen">
+  <div class="hud">
+    <span>Q <b id="g-q">1/10</b></span>
+    <span>Score <b id="g-score">0</b></span>
+    <span>🔥 <b id="g-streak">0</b></span>
+  </div>
+  <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+
+  <div class="question" id="question-text">5 + 3 = ?</div>
+
+  <input type="number" class="answer-input" id="answer-input" placeholder="?" autocomplete="off">
+
+  <div class="feedback" id="feedback"></div>
+
+  <div class="numpad" id="numpad">
+    <button onclick="numpad(1)">1</button><button onclick="numpad(2)">2</button><button onclick="numpad(3)">3</button>
+    <button onclick="numpad(4)">4</button><button onclick="numpad(5)">5</button><button onclick="numpad(6)">6</button>
+    <button onclick="numpad(7)">7</button><button onclick="numpad(8)">8</button><button onclick="numpad(9)">9</button>
+    <button onclick="numpad('-')">−</button><button onclick="numpad(0)">0</button><button onclick="numpad('back')">⌫</button>
+    <button class="wide action" onclick="giveUp()">Skip</button>
+    <button class="submit" onclick="submitAnswer()">⏎</button>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="screen-result" class="screen">
+  <div class="banner"><h1>Game Over</h1></div>
+  <div class="grade" id="result-grade">A</div>
+  <div class="stats-grid">
+    <div class="stat-box"><div class="label">Score</div><div class="value" id="r-score" style="color:var(--green)">0</div></div>
+    <div class="stat-box"><div class="label">Accuracy</div><div class="value" id="r-acc" style="color:var(--blue)">0%</div></div>
+    <div class="stat-box"><div class="label">Correct</div><div class="value" id="r-correct">0/0</div></div>
+    <div class="stat-box"><div class="label">Best Streak</div><div class="value" id="r-streak" style="color:var(--magenta)">0</div></div>
+  </div>
+  <div class="feedback" id="r-msg" style="margin-top:16px;"></div>
+  <div style="margin-top:20px; display:flex; gap:10px;">
+    <button class="btn-primary" style="flex:1;" onclick="goSetup()">Play Again</button>
+    <button class="btn" style="flex:1; justify-content:center;" onclick="goMenu()">Menu</button>
+  </div>
+</div>
+
+<!-- SCORES SCREEN -->
+<div id="screen-scores" class="screen">
+  <div class="banner"><h1>High Scores</h1></div>
+  <div class="card">
+    <div class="score-list" id="score-list"></div>
+  </div>
+  <div style="text-align:center; margin-top:12px;">
+    <button class="btn" style="justify-content:center; border:none; color:var(--muted);" onclick="goMenu()">← Back</button>
+  </div>
+</div>
+
+<!-- HELP SCREEN -->
+<div id="screen-help" class="screen">
+  <div class="banner"><h1>How to Play</h1></div>
+  <div class="card" style="font-size:0.95rem; line-height:1.7;">
+    <p><b style="color:var(--cyan)">Timed Mode:</b></p>
+    <p>• Answer before the timer runs out.<br>
+    • Faster answers earn speed bonus points.<br>
+    • Build streaks — every 5 correct gives a bonus!<br>
+    • High scores are saved automatically.</p>
+    <br>
+    <p><b style="color:var(--cyan)">Zen Mode:</b></p>
+    <p>• No timer, no pressure.<br>
+    • Practice at your own pace.<br>
+    • Type or tap numbers, then hit Enter.</p>
+    <br>
+    <p><b style="color:var(--yellow)">Controls:</b></p>
+    <p>• <span class="kbd">Enter</span> to submit<br>
+    • <span class="kbd">Esc</span> or Skip to pass<br>
+    • On-screen numpad works too</p>
+  </div>
+  <div style="text-align:center; margin-top:12px;">
+    <button class="btn" style="justify-content:center; border:none; color:var(--muted);" onclick="goMenu()">← Back</button>
+  </div>
+</div>
+
+<!-- ZEN SCREEN -->
+<div id="screen-zen" class="screen">
+  <div class="hud">
+    <span>Zen Mode</span>
+    <span>Correct <b id="z-correct">0</b></span>
+    <span>Total <b id="z-total">0</b></span>
+  </div>
+  <div class="question" id="zen-question">5 + 3 = ?</div>
+  <input type="number" class="answer-input" id="zen-input" placeholder="?" autocomplete="off">
+  <div class="feedback" id="zen-feedback"></div>
+  <div class="numpad" id="zen-numpad">
+    <button onclick="zenPad(1)">1</button><button onclick="zenPad(2)">2</button><button onclick="zenPad(3)">3</button>
+    <button onclick="zenPad(4)">4</button><button onclick="zenPad(5)">5</button><button onclick="zenPad(6)">6</button>
+    <button onclick="zenPad(7)">7</button><button onclick="zenPad(8)">8</button><button onclick="zenPad(9)">9</button>
+    <button onclick="zenPad('-')">−</button><button onclick="zenPad(0)">0</button><button onclick="zenPad('back')">⌫</button>
+    <button class="wide action" onclick="goMenu()">Quit</button>
+    <button class="submit" onclick="zenSubmit()">⏎</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* ─── State ─── */
+let state = {
+  mode: 5, diff: 2, rounds: 10,
+  score: 0, streak: 0, bestStreak: 0,
+  correct: 0, current: 0,
+  answer: 0, tl: 10, timerId: null,
+  startTime: 0, zenCorrect: 0, zenTotal: 0
+};
+const modeNames = {1:'+',2:'−',3:'×',4:'÷',5:'Mix'};
+const diffNames = {1:'Easy',2:'Med',3:'Hard'};
+
+/* ─── Navigation ─── */
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goMenu() { show('screen-menu'); clearTimer(); }
+function goSetup() { show('screen-setup'); }
+function goZen() {
+  state.zenCorrect = 0; state.zenTotal = 0;
+  updateZenHud();
+  show('screen-zen');
+  nextZen();
+  setTimeout(() => document.getElementById('zen-input').focus(), 100);
+}
+function showScores() {
+  const list = document.getElementById('score-list');
+  const scores = JSON.parse(localStorage.getItem('mathblitz_scores') || '{}');
+  const entries = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+  if (!entries.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;">No games played yet!</div>';
+  } else {
+    list.innerHTML = entries.map(([k,v]) =>
+      `<div class="score-row"><span class="mode">${k}</span><span class="pts">${v} pts</span></div>`
+    ).join('');
+  }
+  show('screen-scores');
+}
+function showHelp() { show('screen-help'); }
+
+/* ─── Setup ─── */
+function pickMode(m) {
+  state.mode = m;
+  document.querySelectorAll('#mode-btns .btn').forEach(b => b.classList.toggle('selected', +b.dataset.mode === m));
+}
+function pickDiff(d) {
+  state.diff = d;
+  document.querySelectorAll('#diff-btns .btn').forEach(b => b.classList.toggle('selected', +b.dataset.diff === d));
+}
+pickMode(5); pickDiff(2);
+
+/* ─── Question Generator ─── */
+function genQuestion(mode, diff) {
+  let a, b, tl, sym, ans;
+  if (diff === 1) { a = r(1,10); b = r(1,10); tl = 15; }
+  else if (diff === 2) { a = r(5,50); b = r(5,20); tl = 12; }
+  else { a = r(10,99); b = r(10,99); tl = 10; }
+
+  const ops = [];
+  if (mode === 1 || mode === 5) ops.push(['+', (x,y)=>x+y]);
+  if (mode === 2 || mode === 5) ops.push(['−', (x,y)=>x-y]);
+  if (mode === 3 || mode === 5) ops.push(['×', (x,y)=>x*y]);
+  if (mode === 4 || mode === 5) {
+    if (diff === 1) { b = r(2,10); ans = r(1,10); a = b*ans; }
+    else if (diff === 2) { b = r(2,12); ans = r(2,12); a = b*ans; }
+    else { b = r(3,20); ans = r(3,20); a = b*ans; }
+    return [`${a} ÷ ${b} = ?`, ans, tl];
+  }
+  const [s, fn] = ops[r(0, ops.length-1)];
+  if (s === '−' && diff <= 2 && a < b) [a,b] = [b,a];
+  return [`${a} ${s} ${b} = ?`, fn(a,b), tl];
+}
+function r(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+/* ─── Game Loop ─── */
+function startGame() {
+  const rounds = Math.min(50, Math.max(5, parseInt(document.getElementById('rounds-input').value) || 10));
+  state.rounds = rounds;
+  state.score = state.streak = state.bestStreak = state.correct = state.current = 0;
+  show('screen-game');
+  nextQuestion();
+}
+function nextQuestion() {
+  state.current++;
+  if (state.current > state.rounds) { endGame(); return; }
+  const [q, ans, tl] = genQuestion(state.mode, state.diff);
+  state.answer = ans; state.tl = tl;
+  document.getElementById('question-text').textContent = q;
+  document.getElementById('g-q').textContent = `${state.current}/${state.rounds}`;
+  document.getElementById('g-score').textContent = state.score;
+  document.getElementById('g-streak').textContent = state.streak;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  const inp = document.getElementById('answer-input');
+  inp.value = ''; inp.className = 'answer-input'; inp.focus();
+  startTimer(tl);
+}
+function startTimer(tl) {
+  clearTimer();
+  const bar = document.getElementById('timer-fill');
+  bar.style.transition = 'none'; bar.style.width = '100%';
+  state.startTime = Date.now();
+  state.timerId = setInterval(() => {
+    const elapsed = (Date.now() - state.startTime) / 1000;
+    const pct = Math.max(0, 100 - (elapsed / tl) * 100);
+    bar.style.width = pct + '%';
+    if (elapsed >= tl) { clearTimer(); timeUp(); }
+  }, 50);
+}
+function clearTimer() { if (state.timerId) clearInterval(state.timerId); state.timerId = null; }
+function timeUp() {
+  const fb = document.getElementById('feedback');
+  fb.textContent = `⏰ Time's up! Answer was ${state.answer}`;
+  fb.className = 'feedback wrong';
+  state.streak = 0;
+  document.getElementById('g-streak').textContent = 0;
+  setTimeout(nextQuestion, 1200);
+}
+function submitAnswer() {
+  clearTimer();
+  const inp = document.getElementById('answer-input');
+  const val = parseInt(inp.value);
+  const fb = document.getElementById('feedback');
+  const elapsed = (Date.now() - state.startTime) / 1000;
+
+  if (isNaN(val)) {
+    fb.textContent = 'Enter a number!';
+    fb.className = 'feedback wrong';
+    startTimer(Math.max(1, state.tl - elapsed));
+    return;
+  }
+
+  if (val === state.answer) {
+    state.correct++; state.streak++;
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    const base = 10 * state.diff;
+    const speed = Math.max(0, Math.floor((state.tl - elapsed) * 2));
+    let pts = base + speed;
+    let msg = `✓ Correct! +${pts} pts`;
+    if (speed > 0) msg += ` (speed +${speed})`;
+    if (state.streak % 5 === 0) {
+      const bonus = state.streak * 2;
+      pts += bonus;
+      msg += ` 🔥 Streak bonus +${bonus}!`;
+      fb.className = 'feedback bonus';
+    } else {
+      fb.className = 'feedback correct';
+    }
+    state.score += pts;
+    inp.className = 'answer-input correct';
+    fb.textContent = msg;
+    document.getElementById('g-score').textContent = state.score;
+    document.getElementById('g-streak').textContent = state.streak;
+  } else {
+    fb.textContent = `✗ Wrong! Answer was ${state.answer}`;
+    fb.className = 'feedback wrong';
+    inp.className = 'answer-input wrong';
+    state.streak = 0;
+    document.getElementById('g-streak').textContent = 0;
+  }
+  setTimeout(nextQuestion, 1200);
+}
+function giveUp() {
+  clearTimer();
+  const fb = document.getElementById('feedback');
+  fb.textContent = `Skipped! Answer was ${state.answer}`;
+  fb.className = 'feedback wrong';
+  state.streak = 0;
+  document.getElementById('g-streak').textContent = 0;
+  setTimeout(nextQuestion, 1000);
+}
+function endGame() {
+  show('screen-result');
+  const acc = state.rounds ? (state.correct / state.rounds * 100) : 0;
+  const grade = acc === 100 ? 'S' : acc >= 80 ? 'A' : acc >= 60 ? 'B' : acc >= 40 ? 'C' : 'D';
+  document.getElementById('result-grade').textContent = grade;
+  document.getElementById('r-score').textContent = state.score;
+  document.getElementById('r-acc').textContent = acc.toFixed(1) + '%';
+  document.getElementById('r-correct').textContent = `${state.correct}/${state.rounds}`;
+  document.getElementById('r-streak').textContent = state.bestStreak;
+
+  const key = `${modeNames[state.mode]}_${diffNames[state.diff]}`;
+  const scores = JSON.parse(localStorage.getItem('mathblitz_scores') || '{}');
+  const prev = scores[key] || 0;
+  const msg = document.getElementById('r-msg');
+  if (state.score > prev) {
+    scores[key] = state.score;
+    localStorage.setItem('mathblitz_scores', JSON.stringify(scores));
+    msg.innerHTML = `<span style="color:var(--green)">🏆 NEW HIGH SCORE for ${key}! (was ${prev})</span>`;
+  } else {
+    msg.innerHTML = `<span style="color:var(--muted)">High score for ${key}: ${prev}</span>`;
+  }
+}
+
+/* ─── Zen Mode ─── */
+let zenAns = 0;
+function nextZen() {
+  const [q, ans] = genQuestion(state.mode, state.diff);
+  zenAns = ans;
+  document.getElementById('zen-question').textContent = q;
+  document.getElementById('zen-feedback').textContent = '';
+  document.getElementById('zen-feedback').className = 'feedback';
+  const inp = document.getElementById('zen-input');
+  inp.value = ''; inp.className = 'answer-input';
+  inp.focus();
+}
+function zenSubmit() {
+  const inp = document.getElementById('zen-input');
+  const val = parseInt(inp.value);
+  const fb = document.getElementById('zen-feedback');
+  state.zenTotal++;
+  if (!isNaN(val) && val === zenAns) {
+    state.zenCorrect++;
+    fb.textContent = '✓ Correct!';
+    fb.className = 'feedback correct';
+    inp.className = 'answer-input correct';
+  } else {
+    fb.textContent = `✗ Wrong! Answer was ${zenAns}`;
+    fb.className = 'feedback wrong';
+    inp.className = 'answer-input wrong';
+  }
+  updateZenHud();
+  setTimeout(nextZen, 900);
+}
+function updateZenHud() {
+  document.getElementById('z-correct').textContent = state.zenCorrect;
+  document.getElementById('z-total').textContent = state.zenTotal;
+}
+
+/* ─── Numpad ─── */
+function numpad(k) {
+  const inp = document.getElementById('answer-input');
+  if (k === 'back') { inp.value = inp.value.slice(0,-1); }
+  else if (k === '-') { if (!inp.value.includes('-')) inp.value = '-' + inp.value; }
+  else { inp.value += k; }
+  inp.focus();
+}
+function zenPad(k) {
+  const inp = document.getElementById('zen-input');
+  if (k === 'back') { inp.value = inp.value.slice(0,-1); }
+  else if (k === '-') { if (!inp.value.includes('-')) inp.value = '-' + inp.value; }
+  else { inp.value += k; }
+  inp.focus();
+}
+
+/* ─── Keyboard ─── */
+document.addEventListener('keydown', e => {
+  const active = document.querySelector('.screen.active').id;
+  if (active === 'screen-game') {
+    if (e.key === 'Enter') submitAnswer();
+    if (e.key === 'Escape') giveUp();
+  }
+  if (active === 'screen-zen') {
+    if (e.key === 'Enter') zenSubmit();
+  }
+  if (active === 'screen-menu') {
+    if (e.key === '1') goSetup();
+    if (e.key === '2') goZen();
+    if (e.key === '3') showScores();
+    if (e.key === '4') showHelp();
+  }
+});
+</script>
+</body>
+</html>
