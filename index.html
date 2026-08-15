@@ -3,74 +3,292 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Education</title>
+  <title>Education | Empowering Minds</title>
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
   <style>
-    * {
+    /* Reset & Base Variables */
+    *, *::before, *::after {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      /* Dynamic gradient background */
-      background: linear-gradient(-45deg, #0f172a, #1e1b4b, #311042, #0284c7);
-      background-size: 400% 400%;
-      animation: gradientBG 12s ease infinite;
-      color: #ffffff;
-      overflow: hidden;
+    :root {
+      --bg-gradient: linear-gradient(-45deg, #0f172a, #1e1b4b, #311042, #0284c7);
+      --text-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+      --btn-gradient: linear-gradient(135deg, #0284c7 0%, #6366f1 50%, #a855f7 100%);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-hover: rgba(255, 255, 255, 0.1);
     }
 
-    /* Keyframes for the background movement */
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: #ffffff;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
 
-    .container {
+    /* Ambient Glow Orbs */
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      z-index: 0;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .glow-1 { width: 450px; height: 450px; background: #38bdf8; top: -10%; left: -10%; }
+    .glow-2 { width: 500px; height: 500px; background: #a855f7; top: 40%; right: -10%; }
+
+    /* Layout Wrapper */
+    .content-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navigation Bar */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 0;
+    }
+
+    .logo {
+      font-weight: 900;
+      font-size: 1.5rem;
+      letter-spacing: 2px;
+      background: var(--text-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    nav {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    /* Standard Glass Button */
+    .btn {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 12px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: var(--glass-hover);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    /* Primary CTA Button (Game Link) */
+    .btn-primary {
+      background: var(--btn-gradient);
+      background-size: 200% auto;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 20px rgba(2, 132, 199, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      background-position: right center;
+      box-shadow: 0 12px 28px rgba(168, 85, 247, 0.4);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    /* Hero Section */
+    .hero {
       text-align: center;
-      padding: 3rem 4rem;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      padding: 5rem 1rem 4rem;
+      max-width: 900px;
+      margin: 0 auto;
     }
 
     h1 {
-      font-size: 5rem;
-      font-weight: 800;
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-weight: 900;
       letter-spacing: 4px;
       text-transform: uppercase;
-      /* Gradient text fill */
-      background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+      background: var(--text-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.3));
     }
 
-    p {
-      font-size: 1.25rem;
-      color: #94a3b8;
-      letter-spacing: 1px;
+    .subtitle {
+      font-size: clamp(1.1rem, 2vw, 1.5rem);
+      color: #cbd5e1;
+      letter-spacing: 2px;
       font-weight: 300;
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-actions .btn {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+    }
+
+    /* Grid Section (Placeholder Modules) */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 3rem 0 5rem;
+    }
+
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 0.75rem;
+      color: #38bdf8;
+    }
+
+    .card p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+      font-weight: 300;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: #64748b;
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>EDUCATION</h1>
-    <p>Empowering Minds • Shaping the Future</p>
-<a href=game.html>press for  game</a>
+  <!-- Glow effects -->
+  <div class="glow-orb glow-1"></div>
+  <div class="glow-orb glow-2"></div>
+
+  <div class="content-wrapper">
+    <!-- Navbar -->
+    <header>
+      <div class="logo">EduPortal</div>
+      <nav>
+        <a href="#" class="btn">Courses</a>
+        <a href="#" class="btn">Leaderboard</a>
+        <a href="game.html" class="btn btn-primary">Play Game 🎮</a>
+      </nav>
+    </header>
+
+    <!-- Main Hero Section -->
+    <section class="hero">
+      <h1>EDUCATION</h1>
+      <p class="subtitle">Empowering Minds • Shaping the Future</p>
+      
+      <div class="hero-actions">
+        <!-- Direct Game Action -->
+        <a href="game.html" class="btn btn-primary">Launch Game Mini-App 🚀</a>
+        <!-- Placeholders -->
+        <a href="#" class="btn">Explore Modules</a>
+        <a href="#" class="btn">Join Class</a>
+      </div>
+    </section>
+
+    <!-- Feature/Module Grid -->
+    <section class="grid">
+      <div class="card">
+        <div>
+          <h3>Interactive Quizzes</h3>
+          <p>Test your knowledge with dynamic challenge modes and real-time feedback.</p>
+        </div>
+        <a href="#" class="btn">Start Quiz</a>
+      </div>
+
+      <div class="card">
+        <div>
+          <h3>Arcade Learning</h3>
+          <p>Gamified educational experiences designed to keep you engaged while training skills.</p>
+        </div>
+        <a href="game.html" class="btn btn-primary">Play Now</a>
+      </div>
+
+      <div class="card">
+        <div>
+          <h3>Resource Library</h3>
+          <p>Access study materials, video walkthroughs, and curated reference tools.</p>
+        </div>
+        <a href="#" class="btn">Browse Resources</a>
+      </div>
+    </section>
   </div>
+
+  <footer>
+    <p>&copy; 2026 Education Platform. All rights reserved.</p>
+  </footer>
 
 </body>
 </html>
+
